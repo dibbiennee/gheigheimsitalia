@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Click Rapido — Gheigheims Italia</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="game">
+    <a class="back" href="/">← Tutti i giochi</a>
+    <h1>Click Rapido</h1>
+    <p class="lede">Quanti click riesci a fare in 10 secondi?</p>
+
+    <div class="panel">
+      <div class="score">
+        <div>Tempo <b id="time">10.0</b></div>
+        <div>Click <b id="count">0</b></div>
+        <div>Record <b id="best">0</b></div>
+      </div>
+
+      <div class="clicker-area" id="area">Inizia</div>
+
+      <div class="btn-row">
+        <button class="btn" id="start">Avvia</button>
+        <button class="btn secondary" id="reset">Reset record</button>
+      </div>
+
+      <div id="result" class="result empty"></div>
+    </div>
+  </div>
+
+  <script>
+    const area = document.getElementById("area");
+    const timeEl = document.getElementById("time");
+    const countEl = document.getElementById("count");
+    const bestEl = document.getElementById("best");
+    const result = document.getElementById("result");
+    const startBtn = document.getElementById("start");
+
+    const DURATION_MS = 10000;
+    const BEST_KEY = "clicker.best";
+
+    let running = false;
+    let count = 0;
+    let endsAt = 0;
+    let raf = 0;
+    let best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10);
+    bestEl.textContent = best;
+
+    function tick() {
+      const remaining = Math.max(0, endsAt - performance.now());
+      timeEl.textContent = (remaining / 1000).toFixed(1);
+      if (remaining <= 0) {
+        finish();
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+
+    function start() {
+      if (running) return;
+      running = true;
+      count = 0;
+      countEl.textContent = "0";
+      area.textContent = "CLICCA";
+      area.classList.remove("locked");
+      result.textContent = "";
+      result.classList.add("empty");
+      endsAt = performance.now() + DURATION_MS;
+      timeEl.textContent = (DURATION_MS / 1000).toFixed(1);
+      raf = requestAnimationFrame(tick);
+    }
+
+    function finish() {
+      running = false;
+      cancelAnimationFrame(raf);
+      timeEl.textContent = "0.0";
+      area.textContent = "Tempo scaduto";
+      area.classList.add("locked");
+
+      let msg = `Hai fatto ${count} click in 10 secondi.`;
+      if (count > best) {
+        best = count;
+        localStorage.setItem(BEST_KEY, String(best));
+        bestEl.textContent = best;
+        msg += " Nuovo record.";
+      }
+      result.textContent = msg;
+      result.classList.remove("empty");
+    }
+
+    area.addEventListener("click", () => {
+      if (!running) return;
+      count++;
+      countEl.textContent = count;
+    });
+
+    startBtn.addEventListener("click", start);
+
+    document.getElementById("reset").addEventListener("click", () => {
+      localStorage.removeItem(BEST_KEY);
+      best = 0;
+      bestEl.textContent = "0";
+    });
+  </script>
+</body>
+</html>

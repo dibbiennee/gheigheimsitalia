@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sasso Carta Forbice — Gheigheims Italia</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="game">
+    <a class="back" href="/">← Tutti i giochi</a>
+    <h1>Sasso, Carta, Forbice</h1>
+    <p class="lede">Primo che arriva a 5 punti vince.</p>
+
+    <div class="panel">
+      <div class="score">
+        <div>Tu <b id="scoreYou">0</b></div>
+        <div>CPU <b id="scoreCpu">0</b></div>
+      </div>
+
+      <div class="choices">
+        <button class="choice" data-pick="rock" aria-label="Sasso">🪨</button>
+        <button class="choice" data-pick="paper" aria-label="Carta">📄</button>
+        <button class="choice" data-pick="scissors" aria-label="Forbice">✂️</button>
+      </div>
+
+      <div id="result" class="result empty"></div>
+
+      <div class="btn-row">
+        <button class="btn secondary" id="reset">Ricomincia</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const labels = { rock: "Sasso", paper: "Carta", scissors: "Forbice" };
+    const beats = { rock: "scissors", paper: "rock", scissors: "paper" };
+    const opts = ["rock", "paper", "scissors"];
+
+    let you = 0;
+    let cpu = 0;
+
+    const scoreYou = document.getElementById("scoreYou");
+    const scoreCpu = document.getElementById("scoreCpu");
+    const result = document.getElementById("result");
+
+    function play(pick) {
+      if (you >= 5 || cpu >= 5) return;
+      const cpuPick = opts[Math.floor(Math.random() * 3)];
+      let outcome;
+      if (pick === cpuPick) outcome = "Pareggio.";
+      else if (beats[pick] === cpuPick) { you++; outcome = "Vinci il punto."; }
+      else { cpu++; outcome = "Perdi il punto."; }
+
+      let msg = `Tu: ${labels[pick]} — CPU: ${labels[cpuPick]}. ${outcome}`;
+      if (you === 5) msg = `${msg} Hai vinto la partita.`;
+      if (cpu === 5) msg = `${msg} CPU ha vinto la partita.`;
+
+      scoreYou.textContent = you;
+      scoreCpu.textContent = cpu;
+      result.textContent = msg;
+      result.classList.remove("empty");
+    }
+
+    document.querySelectorAll(".choice").forEach(btn => {
+      btn.addEventListener("click", () => play(btn.dataset.pick));
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      you = 0; cpu = 0;
+      scoreYou.textContent = "0";
+      scoreCpu.textContent = "0";
+      result.textContent = "";
+      result.classList.add("empty");
+    });
+  </script>
+</body>
+</html>

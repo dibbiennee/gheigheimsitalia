@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Indovina il Numero — Gheigheims Italia</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="game">
+    <a class="back" href="/">← Tutti i giochi</a>
+    <h1>Indovina il Numero</h1>
+    <p class="lede">Penso a un numero tra 1 e 100. Hai 7 tentativi.</p>
+
+    <div class="panel">
+      <div class="score">
+        <div>Tentativi rimasti <b id="tries">7</b></div>
+        <div>Indovinati <b id="wins">0</b></div>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <input class="input" id="guess" type="number" min="1" max="100" placeholder="1 - 100" />
+        <button class="btn" id="submit">Indovina</button>
+        <button class="btn secondary" id="reset">Nuovo numero</button>
+      </div>
+
+      <div id="result" class="result empty"></div>
+    </div>
+  </div>
+
+  <script>
+    let target = randomTarget();
+    let tries = 7;
+    let wins = 0;
+    let ended = false;
+
+    const triesEl = document.getElementById("tries");
+    const winsEl = document.getElementById("wins");
+    const result = document.getElementById("result");
+    const input = document.getElementById("guess");
+
+    function randomTarget() { return Math.floor(Math.random() * 100) + 1; }
+
+    function setResult(text) {
+      result.textContent = text;
+      result.classList.remove("empty");
+    }
+
+    function submit() {
+      if (ended) return;
+      const v = parseInt(input.value, 10);
+      if (Number.isNaN(v) || v < 1 || v > 100) {
+        setResult("Inserisci un numero tra 1 e 100.");
+        return;
+      }
+
+      if (v === target) {
+        wins++;
+        winsEl.textContent = wins;
+        setResult(`Esatto. Il numero era ${target}.`);
+        ended = true;
+        return;
+      }
+
+      tries--;
+      triesEl.textContent = tries;
+
+      if (tries === 0) {
+        setResult(`Finiti i tentativi. Il numero era ${target}.`);
+        ended = true;
+        return;
+      }
+
+      setResult(v < target ? "Più alto." : "Più basso.");
+      input.select();
+    }
+
+    function reset() {
+      target = randomTarget();
+      tries = 7;
+      ended = false;
+      triesEl.textContent = tries;
+      result.textContent = "";
+      result.classList.add("empty");
+      input.value = "";
+      input.focus();
+    }
+
+    document.getElementById("submit").addEventListener("click", submit);
+    document.getElementById("reset").addEventListener("click", reset);
+    input.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
+  </script>
+</body>
+</html>
