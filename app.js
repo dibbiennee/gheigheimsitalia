@@ -39,22 +39,6 @@ function sweep(from, to, dur = 0.25, type = "sawtooth", vol = 0.18) {
   osc.stop(t + dur);
 }
 
-function noise(dur = 0.18, vol = 0.22) {
-  if (!audioCtx) return;
-  const t = audioCtx.currentTime;
-  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
-  const src = audioCtx.createBufferSource();
-  const gain = audioCtx.createGain();
-  src.buffer = buf;
-  gain.gain.setValueAtTime(vol, t);
-  gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
-  src.connect(gain).connect(audioCtx.destination);
-  src.start(t);
-  src.stop(t + dur);
-}
-
 function fanfare() {
   beep(523, 0.09, "square", 0.18);
   setTimeout(() => beep(659, 0.09, "square", 0.18), 90);
@@ -64,6 +48,31 @@ function fanfare() {
 
 function failSound() {
   sweep(440, 80, 0.45, "sawtooth", 0.18);
+}
+
+// ===== TTS ITALIANO (Brainrot voice) =====
+let ttsVoice = null;
+function pickItalianVoice() {
+  const voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+  ttsVoice = voices.find(v => v.lang === "it-IT") || voices.find(v => v.lang && v.lang.startsWith("it")) || null;
+}
+if (window.speechSynthesis) {
+  pickItalianVoice();
+  speechSynthesis.addEventListener("voiceschanged", pickItalianVoice);
+}
+
+function tts(text, rate = 1.25, pitch = 1.1) {
+  if (!window.speechSynthesis) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if (ttsVoice) u.voice = ttsVoice;
+    u.lang = "it-IT";
+    u.rate = rate;
+    u.pitch = pitch;
+    u.volume = 0.8;
+    speechSynthesis.speak(u);
+  } catch (e) { /* silent */ }
 }
 
 // ===== PARTICLES =====
@@ -103,7 +112,7 @@ function burst(x, y, count = 24, palette = COLORS) {
   }
 }
 
-function tick() {
+function tickFx() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
@@ -125,9 +134,9 @@ function tick() {
     else { ctx.beginPath(); ctx.arc(0, 0, p.size/2, 0, Math.PI * 2); ctx.fill(); }
     ctx.restore();
   }
-  requestAnimationFrame(tick);
+  requestAnimationFrame(tickFx);
 }
-tick();
+tickFx();
 
 // ===== SHAKE =====
 const shell = document.getElementById("shell");
@@ -154,11 +163,24 @@ function reaction(text, color = "yellow") {
   reactionTimer = setTimeout(() => reactionEl.classList.remove("show"), 1200);
 }
 
-const PHRASES_WIN  = ["BRAVISSIMO!", "MAMMA MIA!", "FORZA ITALIA!", "POMODORO!", "TROPPO FORTE!"];
-const PHRASES_LOSE = ["PORCAMADO!", "MADONNA!", "PER LA MISERIA!", "PEGGIO DI ZIA PINA!", "AHIA!"];
-const PHRASES_TIE  = ["UFFA!", "MEH.", "PARI!", "NIENTE!"];
+const BRAINROT_WIN = ["TRALALERO TRALALA!", "BOMBARDIRO!", "SAHUR SAHUR!", "BRAVISSIMO!", "MAMMA MIA!"];
+const BRAINROT_LOSE = ["PORCAMADO!", "MADONNA!", "OH NO!", "AHIA!", "PEGGIO DI ZIA PINA!"];
+const BRAINROT_TIE  = ["UFFA!", "MEH.", "PARI."];
+
+const TTS_WIN  = ["Tralalero tralala", "Bombardiro coccodrillo", "Tung tung sahur", "Bravissimo", "Mamma mia"];
+const TTS_LOSE = ["Porcamado", "Mamma mia che disastro", "Ahia", "Tung tung", "Sahur sahur"];
 
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+// ===== TOAST =====
+const toastEl = document.getElementById("toast");
+let toastTimer = 0;
+function toast(msg, ms = 2400) {
+  toastEl.textContent = msg;
+  toastEl.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.hidden = true, ms);
+}
 
 // ===== GLITCH RANDOMNESS =====
 const brand = document.getElementById("brand");
@@ -192,6 +214,8 @@ function goto(name) {
   if (window.location.hash !== "#" + name) window.location.hash = name;
   window.scrollTo(0, 0);
   ensureAudio();
+  if (name === "leaderboard") loadLeaderboard(currentLbGame);
+  if (name === "guess") initGuessScene();
 }
 
 document.querySelectorAll("[data-go]").forEach(btn => {
@@ -216,13 +240,11 @@ document.querySelectorAll("[data-back]").forEach(btn => {
 
 document.getElementById("brand").addEventListener("click", () => goto("menu"));
 
-// hash router on load
 window.addEventListener("DOMContentLoaded", () => {
   const h = window.location.hash.replace("#", "");
-  if (h && ["rps", "guess", "click"].includes(h)) goto(h);
+  if (h && ["rps", "guess", "click", "leaderboard"].includes(h)) goto(h);
 });
 
-// helper: bump score visual
 function bumpEl(el) {
   el.classList.remove("bump");
   void el.offsetWidth;
@@ -230,12 +252,82 @@ function bumpEl(el) {
   setTimeout(() => el.classList.remove("bump"), 200);
 }
 
-// ===== GAME 1: RPS =====
-const labels = { rock: "Sasso", paper: "Carta", scissors: "Forbice" };
-const beats = { rock: "scissors", paper: "rock", scissors: "paper" };
-const opts = ["rock", "paper", "scissors"];
+// ===== SHARE =====
+const SITE_URL = "https://gheigheimsitalia.vercel.app";
 
-let rpsYou = 0, rpsCpu = 0;
+async function share(text) {
+  try {
+    if (navigator.share) {
+      await navigator.share({ text, url: SITE_URL });
+      return;
+    }
+  } catch (e) { /* fallback */ }
+  try {
+    await navigator.clipboard.writeText(text + "\n" + SITE_URL);
+    toast("Copiato negli appunti");
+  } catch {
+    toast("Copia manualmente: " + text);
+  }
+}
+
+// ===== NICKNAME MODAL =====
+const nickModal = document.getElementById("nickModal");
+const nickInput = document.getElementById("nickInput");
+const regionInput = document.getElementById("regionInput");
+let pendingSubmit = null; // { game, score }
+
+function openNickModal(game, score) {
+  pendingSubmit = { game, score };
+  const existing = window.GH && window.GH.getNick && window.GH.getNick();
+  if (existing) {
+    nickInput.value = existing.nickname;
+    regionInput.value = existing.region;
+  }
+  nickModal.hidden = false;
+  setTimeout(() => nickInput.focus(), 100);
+}
+
+function closeNickModal() {
+  nickModal.hidden = true;
+  pendingSubmit = null;
+}
+
+document.getElementById("nickSave").addEventListener("click", async () => {
+  const nickname = (nickInput.value || "").trim();
+  const region = regionInput.value;
+  if (!nickname || nickname.length < 2) { nickInput.focus(); return toast("Nome troppo corto"); }
+  if (!region) { regionInput.focus(); return toast("Scegli una regione"); }
+  if (!window.GH) return toast("Leaderboard non disponibile");
+  window.GH.setNick({ nickname, region });
+  if (pendingSubmit) {
+    const r = await window.GH.submit(pendingSubmit.game, pendingSubmit.score);
+    if (r.ok) toast("Pubblicato in classifica");
+    else if (r.reason === "not-configured") toast("Leaderboard non configurata");
+    else toast("Errore: " + (r.error || r.reason));
+  }
+  closeNickModal();
+});
+
+document.getElementById("nickSkip").addEventListener("click", closeNickModal);
+
+async function publishScore(game, score) {
+  if (!window.GH || !window.GH.configured) return;
+  if (!Number.isFinite(score) || score <= 0) return;
+  const nick = window.GH.getNick();
+  if (!nick) { openNickModal(game, score); return; }
+  const r = await window.GH.submit(game, score);
+  if (r.ok) toast("Record pubblicato 🏆");
+}
+
+// ===== GAME 1: RPS BRAINROT =====
+// shark (Tralalero) beats croc (Bombardiro)
+// croc beats wood (Tung Tung)
+// wood beats shark
+const RPS_LABELS = { shark: "Tralalero", croc: "Bombardiro", wood: "Tung Tung" };
+const RPS_BEATS = { shark: "croc", croc: "wood", wood: "shark" };
+const RPS_OPTS = ["shark", "croc", "wood"];
+
+let rpsYou = 0, rpsCpu = 0, rpsHistory = [];
 const rpsYouEl = document.getElementById("rpsYou");
 const rpsCpuEl = document.getElementById("rpsCpu");
 const rpsRoundEl = document.getElementById("rpsRound");
@@ -245,70 +337,155 @@ document.querySelectorAll(".choice").forEach(btn => {
     ensureAudio();
     if (rpsYou >= 5 || rpsCpu >= 5) return;
     const pickP = btn.dataset.pick;
-    const cpuPick = opts[Math.floor(Math.random() * 3)];
+    const cpuPick = RPS_OPTS[Math.floor(Math.random() * 3)];
 
     const rect = btn.getBoundingClientRect();
     const cx = rect.left + rect.width/2;
     const cy = rect.top + rect.height/2;
 
+    let outcome;
     if (pickP === cpuPick) {
-      reaction(pick(PHRASES_TIE), "cyan");
+      outcome = "tie";
+      reaction(pick(BRAINROT_TIE), "cyan");
       beep(440, 0.06);
       burst(cx, cy, 12, ["#00f0ff", "#ffffff"]);
       resetCombo();
-    } else if (beats[pickP] === cpuPick) {
+    } else if (RPS_BEATS[pickP] === cpuPick) {
+      outcome = "win";
       rpsYou++;
       rpsYouEl.textContent = rpsYou;
       bumpEl(rpsYouEl);
-      reaction(pick(PHRASES_WIN), "lime");
+      const phrase = pick(BRAINROT_WIN);
+      reaction(phrase, "lime");
+      tts(pick(TTS_WIN));
       fanfare();
       burst(cx, cy, 40, ["#b6f500", "#ffd60a", "#00f0ff"]);
       burst(window.innerWidth/2, window.innerHeight/2, 60);
       shake();
       bumpCombo();
     } else {
+      outcome = "lose";
       rpsCpu++;
       rpsCpuEl.textContent = rpsCpu;
       bumpEl(rpsCpuEl);
-      reaction(pick(PHRASES_LOSE), "pink");
+      reaction(pick(BRAINROT_LOSE), "pink");
+      tts(pick(TTS_LOSE));
       failSound();
       burst(cx, cy, 20, ["#ff006e", "#fb5607"]);
       shake(true);
       resetCombo();
     }
 
+    rpsHistory.push(outcome);
     rpsRoundEl.textContent = Math.min(rpsYou + rpsCpu + 1, 9);
 
     if (rpsYou === 5) {
-      setTimeout(() => { reaction("MATCH TUO!", "lime"); fanfare(); burst(window.innerWidth/2, 200, 80); }, 700);
+      setTimeout(() => {
+        reaction("MATCH TUO!", "lime");
+        tts("Bravissimo, match tuo");
+        fanfare();
+        burst(window.innerWidth/2, 200, 80);
+        publishScore("rps", rpsYou * 100 - rpsCpu * 10);
+      }, 700);
     }
     if (rpsCpu === 5) {
-      setTimeout(() => { reaction("MACCHINA VINCE!", "pink"); failSound(); shake(true); }, 700);
+      setTimeout(() => {
+        reaction("MACCHINA VINCE!", "pink");
+        tts("Porcamado, la macchina vince");
+        failSound();
+        shake(true);
+      }, 700);
     }
   });
 });
 
 document.querySelector("[data-reset='rps']").addEventListener("click", () => {
-  rpsYou = 0; rpsCpu = 0;
+  rpsYou = 0; rpsCpu = 0; rpsHistory = [];
   rpsYouEl.textContent = "0";
   rpsCpuEl.textContent = "0";
   rpsRoundEl.textContent = "1";
   beep(660, 0.08);
 });
 
-// ===== GAME 2: GUESS =====
-let target = randomTarget();
-let tries = 7, wins = 0, ended = false;
+document.querySelector("[data-share='rps']").addEventListener("click", () => {
+  const total = rpsYou + rpsCpu;
+  const grid = total === 0 ? "(nessuna partita ancora)" : rpsHistory.map(o => o === "win" ? "🟩" : o === "lose" ? "🟥" : "🟨").join("");
+  share(`🦈 Tralalero vs Bombardiro\nTu ${rpsYou} — Macchina ${rpsCpu}\n${grid}\n#gheigheimsitalia #brainrot`);
+});
+
+// ===== GAME 2: GUESS — DAILY CHALLENGE =====
 const guessTriesEl = document.getElementById("guessTries");
 const guessWinsEl = document.getElementById("guessWins");
 const guessLastEl = document.getElementById("guessLast");
 const guessInput = document.getElementById("guessInput");
+const guessTrackEl = document.getElementById("guessTrack");
+const guessTagEl = document.getElementById("guessTag");
+const guessShareBtn = document.getElementById("guessShare");
+const guessRetryBtn = document.getElementById("guessRetry");
 
-function randomTarget() { return Math.floor(Math.random() * 100) + 1; }
+function dailySeed() {
+  const epoch = new Date("2026-01-01T00:00:00Z").getTime();
+  const day = Math.floor((Date.now() - epoch) / 86400000);
+  let s = day * 9301 + 49297;
+  s = (s % 233280 + 233280) % 233280;
+  const target = (s % 100) + 1;
+  return { day: day + 1, target };
+}
+
+const GUESS_KEY = "gheigheims.guess.daily";
+let guessState = null; // { day, target, tries, history, done, won }
+let trainingMode = false;
+
+function loadGuessState() {
+  const seed = dailySeed();
+  try {
+    const stored = JSON.parse(localStorage.getItem(GUESS_KEY) || "null");
+    if (stored && stored.day === seed.day) return stored;
+  } catch {}
+  return {
+    day: seed.day, target: seed.target,
+    tries: 7, history: [], done: false, won: false,
+  };
+}
+
+function saveGuessState() {
+  if (trainingMode) return;
+  try { localStorage.setItem(GUESS_KEY, JSON.stringify(guessState)); } catch {}
+}
+
+function initGuessScene() {
+  trainingMode = false;
+  guessState = loadGuessState();
+  renderGuess();
+}
+
+function renderGuess() {
+  guessTagEl.textContent = trainingMode ? "Allenamento (codice casuale)" : `Sfida #${guessState.day} · Italia`;
+  guessTriesEl.textContent = guessState.tries;
+  guessWinsEl.textContent = guessState.done ? (guessState.won ? "SÌ" : "NO") : "—";
+  guessLastEl.textContent = guessState.history.length > 0
+    ? String(guessState.history[guessState.history.length - 1].v).padStart(2, "0")
+    : "—";
+
+  guessTrackEl.innerHTML = "";
+  guessState.history.forEach(h => {
+    const pill = document.createElement("span");
+    pill.className = "guess-pill " + (h.r === "hit" ? "hit" : h.r === "low" ? "low" : "high");
+    const icon = h.r === "hit" ? "🎯" : h.r === "high" ? "🔼" : "🔽";
+    pill.textContent = `${String(h.v).padStart(2, "0")} ${icon}`;
+    guessTrackEl.appendChild(pill);
+  });
+
+  const showShare = guessState.done && !trainingMode;
+  guessShareBtn.style.display = showShare ? "" : "none";
+  guessRetryBtn.style.display = guessState.done ? "" : "none";
+  guessRetryBtn.textContent = trainingMode ? "Nuovo codice" : "Allenamento (extra)";
+  guessInput.disabled = guessState.done;
+}
 
 function guessSubmit() {
   ensureAudio();
-  if (ended) return;
+  if (!guessState || guessState.done) return;
   const v = parseInt(guessInput.value, 10);
   if (Number.isNaN(v) || v < 1 || v > 100) {
     reaction("1—100!", "pink");
@@ -317,56 +494,81 @@ function guessSubmit() {
     return;
   }
 
-  guessLastEl.textContent = String(v).padStart(2, "0");
-  bumpEl(guessLastEl);
+  guessInput.value = "";
 
-  if (v === target) {
-    wins++;
-    guessWinsEl.textContent = wins;
-    bumpEl(guessWinsEl);
+  if (v === guessState.target) {
+    guessState.history.push({ v, r: "hit" });
+    guessState.done = true;
+    guessState.won = true;
     reaction("BRAVISSIMO!", "lime");
+    tts("Bravissimo, sahur sahur");
     fanfare();
     burst(window.innerWidth/2, window.innerHeight/2, 80);
     shake();
     bumpCombo(3);
-    ended = true;
+    saveGuessState();
+    renderGuess();
+    if (!trainingMode) {
+      const attemptsUsed = 7 - guessState.tries + 1;
+      const score = Math.max(0, (8 - attemptsUsed) * 100);
+      setTimeout(() => publishScore("guess", score), 600);
+    }
     return;
   }
 
-  tries--;
-  guessTriesEl.textContent = tries;
+  guessState.tries--;
+  if (v < guessState.target) {
+    guessState.history.push({ v, r: "high" });
+    reaction("PIÙ ALTO!", "cyan");
+    tts("Più alto");
+    beep(660, 0.08);
+  } else {
+    guessState.history.push({ v, r: "low" });
+    reaction("PIÙ BASSO!", "yellow");
+    tts("Più basso");
+    beep(330, 0.08);
+  }
+  bumpCombo();
 
-  if (tries === 0) {
-    reaction(`ERA ${target}!`, "pink");
+  if (guessState.tries === 0) {
+    guessState.done = true;
+    guessState.won = false;
+    reaction(`ERA ${guessState.target}!`, "pink");
+    tts(`Porcamado, era ${guessState.target}`);
     failSound();
     shake(true);
     resetCombo();
-    ended = true;
-    return;
   }
 
-  if (v < target) { reaction("PIÙ ALTO!", "cyan"); beep(660, 0.08); }
-  else { reaction("PIÙ BASSO!", "yellow"); beep(330, 0.08); }
-  bumpCombo();
-  guessInput.select();
+  saveGuessState();
+  renderGuess();
+  if (!guessState.done) guessInput.focus();
 }
 
 function guessReset() {
-  target = randomTarget();
-  tries = 7;
-  ended = false;
-  guessTriesEl.textContent = "7";
-  guessLastEl.textContent = "—";
-  guessInput.value = "";
-  guessInput.focus();
+  trainingMode = true;
+  const seed = Math.floor(Math.random() * 100) + 1;
+  guessState = { day: 0, target: seed, tries: 7, history: [], done: false, won: false };
   beep(880, 0.08);
+  renderGuess();
+  guessInput.focus();
+}
+
+function guessShareCard() {
+  const t = guessState;
+  if (!t.done) return;
+  const grid = t.history.map(h => h.r === "hit" ? "🎯" : h.r === "high" ? "🔼" : "🔽").join("");
+  const result = t.won ? `${t.history.length}/7` : "X/7";
+  const txt = `🎯 GHEIGHEIMS Italia — Sfida #${t.day}\nCodice di Tung Tung: ${result}\n${grid}\n#gheigheimsitalia #brainrot`;
+  share(txt);
 }
 
 document.getElementById("guessSubmit").addEventListener("click", guessSubmit);
 document.querySelector("[data-reset='guess']").addEventListener("click", guessReset);
+guessShareBtn.addEventListener("click", guessShareCard);
 guessInput.addEventListener("keydown", e => { if (e.key === "Enter") guessSubmit(); });
 
-// ===== GAME 3: CLICKER =====
+// ===== GAME 3: CLICKER — BOMBARDIRO RAGE =====
 const zone = document.getElementById("clickZone");
 const clickTime = document.getElementById("clickTime");
 const clickCount = document.getElementById("clickCount");
@@ -395,7 +597,7 @@ function startClicker() {
   running = true;
   count = 0;
   clickCount.textContent = "0";
-  clickState.textContent = "GO!";
+  clickState.textContent = "BOMBARDA!";
   clickState.className = "clicker-state live";
   clickSub.textContent = "Clicca a manetta";
   zone.classList.remove("locked");
@@ -405,6 +607,7 @@ function startClicker() {
   raf = requestAnimationFrame(tickClicker);
   sweep(220, 880, 0.35);
   reaction("VAI!", "lime");
+  tts("Bombardiro, vai");
   resetCombo();
 }
 
@@ -431,13 +634,16 @@ function finishClicker() {
   if (count > 0) {
     setTimeout(() => {
       reaction(recordMsg || `${count} CLICK!`, recordMsg ? "lime" : "yellow");
-      if (recordMsg) fanfare();
+      if (recordMsg) { fanfare(); tts("Bravissimo, nuovo record"); }
+      else { tts(pick(TTS_WIN)); }
       burst(window.innerWidth/2, window.innerHeight/2, 100);
       shake(true);
     }, 200);
+    publishScore("click", count);
   } else {
     failSound();
     reaction("ZERO?!", "pink");
+    tts("Zero? Porcamado");
   }
 
   clickSub.textContent = `${count} click · ${cps} click/sec` + (recordMsg ? " · record battuto" : "");
@@ -467,7 +673,8 @@ zone.addEventListener("click", (e) => {
   beep(440 + (count % 8) * 80, 0.04, "square", 0.12);
 
   if (count > 0 && count % 25 === 0) {
-    reaction(pick(PHRASES_WIN), "lime");
+    reaction(pick(BRAINROT_WIN), "lime");
+    tts(pick(TTS_WIN));
     burst(e.clientX, e.clientY, 40);
     shake();
   }
@@ -482,6 +689,62 @@ document.querySelector("[data-reset='click']").addEventListener("click", () => {
   beep(220, 0.18, "sawtooth");
 });
 
+document.querySelector("[data-share='click']").addEventListener("click", () => {
+  const cps = (best / (DURATION_MS / 1000)).toFixed(1);
+  share(`🔥 BOMBARDIRO CLICK RAGE\nIl mio record: ${best} click in 10s (${cps}/sec)\nBattimi se ce la fai\n#gheigheimsitalia #brainrot`);
+});
+
+// ===== LEADERBOARD =====
+let currentLbGame = "click";
+const lbList = document.getElementById("lbList");
+
+document.querySelectorAll(".lb-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".lb-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    currentLbGame = tab.dataset.lb;
+    beep(660, 0.05);
+    loadLeaderboard(currentLbGame);
+  });
+});
+
+document.getElementById("lbRefresh").addEventListener("click", () => loadLeaderboard(currentLbGame));
+
+async function loadLeaderboard(game) {
+  if (!window.GH) {
+    lbList.innerHTML = '<div class="lb-empty">Modulo non caricato</div>';
+    return;
+  }
+  if (!window.GH.configured) {
+    lbList.innerHTML = `<div class="lb-empty">⚠️ Leaderboard non configurata.<br/>Vedi SETUP.md per attivare Firebase.</div>`;
+    return;
+  }
+  lbList.innerHTML = '<div class="lb-empty">Caricamento…</div>';
+  const r = await window.GH.top(game, 20);
+  if (!r.ok || r.rows.length === 0) {
+    lbList.innerHTML = '<div class="lb-empty">Nessun record ancora. Sii il primo!</div>';
+    return;
+  }
+  const myNick = window.GH.getNick();
+  lbList.innerHTML = r.rows.map((row, i) => {
+    const isMe = myNick && row.nickname === myNick.nickname && row.region === myNick.region;
+    const podium = i < 3 ? `podium-${i + 1}` : "";
+    const me = isMe ? "me" : "";
+    return `<div class="lb-row ${podium} ${me}">
+      <div class="lb-rank">${String(i + 1).padStart(2, "0")}</div>
+      <div class="lb-info">
+        <p class="lb-name">${escapeHtml(row.nickname)}</p>
+        <p class="lb-region">${escapeHtml(row.region)}</p>
+      </div>
+      <div class="lb-score">${row.score}</div>
+    </div>`;
+  }).join("");
+}
+
+function escapeHtml(s) {
+  return String(s || "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
 // ===== INTRO BLAST =====
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
@@ -491,7 +754,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }, 400);
 });
 
-// First-tap sound primer (some browsers block audio until interaction)
+// First-tap sound primer
 document.body.addEventListener("pointerdown", function primer() {
   ensureAudio();
   document.body.removeEventListener("pointerdown", primer);

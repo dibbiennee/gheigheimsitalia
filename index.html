@@ -3,8 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>GHEIGHEIMS — Italia Arcade Neon 2026</title>
-  <meta name="description" content="Tre mini giochi italiani neon. Sfida la macchina, batti i record, scatena il caos." />
+  <title>GHEIGHEIMS — Brainrot Italia Arcade 2026</title>
+  <meta name="description" content="Tralalero vs Bombardiro vs Tung Tung. Tre mini giochi italiani brainrot. Sfida quotidiana, classifica nazionale, vibe TikTok." />
+  <meta property="og:title" content="Gheigheims Italia — Brainrot Arcade 2026" />
+  <meta property="og:description" content="Tralalero vs Bombardiro vs Tung Tung. Sfida giornaliera + classifica nazionale." />
+  <meta property="og:type" content="website" />
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=clash-display@500,600,700&f[]=tanker@400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
@@ -13,9 +16,9 @@
 <body>
   <div class="bg"></div>
   <div class="bg-stickers" aria-hidden="true">
-    <div class="sticker">Italia · Italia · Italia · Italia · Italia · Italia</div>
-    <div class="sticker">Mamma mia · Bravissimo · Mamma mia · Bravissimo</div>
-    <div class="sticker">Gheigheims · 2026 · Gheigheims · 2026 · Gheigheims</div>
+    <div class="sticker">Tralalero · Bombardiro · Tung Tung · Tralalero · Bombardiro</div>
+    <div class="sticker">Mamma mia · Bravissimo · Sahur Sahur · Porcamado · Bombardiro</div>
+    <div class="sticker">Gheigheims · 2026 · Italia Brainrot · Gheigheims · 2026</div>
   </div>
   <canvas id="particles"></canvas>
   <div class="crt"></div>
@@ -33,29 +36,33 @@
     <!-- ===== MENU ===== -->
     <section class="scene active" data-scene="menu">
       <div class="menu">
-        <p class="menu-eyebrow">▶ Insert coin · Ed. 2026</p>
+        <p class="menu-eyebrow">▶ Brainrot Championship · Ed. 2026</p>
         <h1 class="menu-title">
           <span class="line1">Gheigheims</span>
           <span class="line2">Italia</span>
         </h1>
-        <p class="menu-tagline">Tre giochi. Una sola classifica. <b>Filma. Gioca. Diventa virale.</b></p>
+        <p class="menu-tagline">Tralalero · Bombardiro · Tung Tung. <b>Filma. Gioca. Diventa virale.</b></p>
 
         <div class="menu-grid">
           <button class="menu-tile" data-go="rps">
             <span class="tile-num">01</span>
-            <h2 class="tile-name">Sasso · Carta · Forbice</h2>
-            <p class="tile-desc">Best of 5 contro la macchina.</p>
+            <h2 class="tile-name">Tralalero vs Bombardiro</h2>
+            <p class="tile-desc">Lo squalo, il coccodrillo e la mazza. Best of 5.</p>
           </button>
           <button class="menu-tile" data-go="guess">
             <span class="tile-num">02</span>
-            <h2 class="tile-name">Indovina il Numero</h2>
-            <p class="tile-desc">1—100. Sette colpi.</p>
+            <h2 class="tile-name">Codice di Tung Tung</h2>
+            <p class="tile-desc">Sfida giornaliera. Condividi in chat.</p>
           </button>
           <button class="menu-tile" data-go="click">
             <span class="tile-num">03</span>
-            <h2 class="tile-name">Click Rapido</h2>
-            <p class="tile-desc">10 secondi di puro caos.</p>
+            <h2 class="tile-name">Bombardiro Click Rage</h2>
+            <p class="tile-desc">10 secondi. Cliccare a manetta.</p>
           </button>
+        </div>
+
+        <div class="menu-actions">
+          <button class="btn ghost" data-go="leaderboard">🏆 Classifica nazionale</button>
         </div>
 
         <div class="menu-footer">
@@ -64,14 +71,20 @@
       </div>
     </section>
 
-    <!-- ===== RPS ===== -->
+    <!-- ===== RPS — TRALALERO BRAINROT ===== -->
     <section class="scene" data-scene="rps">
       <div class="game">
         <div class="game-header">
           <button class="back-btn" data-back>← Menu</button>
-          <span style="font-family: 'Clash Display'; font-weight: 700; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--cyan);">Gara 01 / Best of 5</span>
+          <span class="game-tag">Gara 01 / Best of 5</span>
         </div>
-        <h1 class="game-title">Sasso<br/>Carta<br/>Forbice</h1>
+        <h1 class="game-title">Tralalero<br/>vs <em>Bombardiro</em><br/>vs Tung Tung</h1>
+
+        <div class="rules-strip">
+          <span>🦈 batte 🐊</span>
+          <span>🐊 batte 🪵</span>
+          <span>🪵 batte 🦈</span>
+        </div>
 
         <div class="scoreboard">
           <div class="score-cell highlight">
@@ -89,34 +102,37 @@
         </div>
 
         <div class="choices">
-          <button class="choice" data-pick="rock">
-            <span class="choice-emoji">✊</span>
-            <span class="choice-label">Sasso</span>
+          <button class="choice" data-pick="shark">
+            <span class="choice-emoji">🦈</span>
+            <span class="choice-label">Tralalero</span>
           </button>
-          <button class="choice" data-pick="paper">
-            <span class="choice-emoji">✋</span>
-            <span class="choice-label">Carta</span>
+          <button class="choice" data-pick="croc">
+            <span class="choice-emoji">🐊</span>
+            <span class="choice-label">Bombardiro</span>
           </button>
-          <button class="choice" data-pick="scissors">
-            <span class="choice-emoji">✌</span>
-            <span class="choice-label">Forbice</span>
+          <button class="choice" data-pick="wood">
+            <span class="choice-emoji">🪵</span>
+            <span class="choice-label">Tung Tung</span>
           </button>
         </div>
 
         <div class="btn-row">
           <button class="btn ghost" data-reset="rps">Ricomincia</button>
+          <button class="btn ghost" data-share="rps">📤 Condividi</button>
         </div>
       </div>
     </section>
 
-    <!-- ===== GUESS ===== -->
+    <!-- ===== GUESS — DAILY CHALLENGE ===== -->
     <section class="scene" data-scene="guess">
       <div class="game">
         <div class="game-header">
           <button class="back-btn" data-back>← Menu</button>
-          <span style="font-family: 'Clash Display'; font-weight: 700; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--cyan);">Gara 02 / Codice 1—100</span>
+          <span class="game-tag" id="guessTag">Sfida giornaliera</span>
         </div>
-        <h1 class="game-title">Indovina<br/>il Numero</h1>
+        <h1 class="game-title">Codice di<br/><em>Tung Tung</em></h1>
+
+        <p class="game-sub">Lo stesso codice per tutta Italia oggi. Indovinalo e condividi il tuo risultato.</p>
 
         <div class="scoreboard">
           <div class="score-cell highlight">
@@ -124,8 +140,8 @@
             <div class="score-value accent" id="guessTries">7</div>
           </div>
           <div class="score-cell">
-            <div class="score-label">Indovinati</div>
-            <div class="score-value" id="guessWins">0</div>
+            <div class="score-label">Indovinato</div>
+            <div class="score-value" id="guessWins">—</div>
           </div>
           <div class="score-cell">
             <div class="score-label">Ultimo</div>
@@ -133,25 +149,28 @@
           </div>
         </div>
 
+        <div class="guess-track" id="guessTrack" aria-label="Cronologia tentativi"></div>
+
         <div class="guess-row">
           <input class="input" id="guessInput" type="number" min="1" max="100" placeholder="00" inputmode="numeric" />
-          <button class="btn" id="guessSubmit">Spara!</button>
+          <button class="btn" id="guessSubmit">Sahur!</button>
         </div>
 
         <div class="btn-row">
-          <button class="btn ghost" data-reset="guess">Nuovo codice</button>
+          <button class="btn ghost" id="guessShare" style="display:none;">📤 Condividi risultato</button>
+          <button class="btn ghost" data-reset="guess" id="guessRetry" style="display:none;">Riprova (allenamento)</button>
         </div>
       </div>
     </section>
 
-    <!-- ===== CLICKER ===== -->
+    <!-- ===== CLICKER — BOMBARDIRO RAGE ===== -->
     <section class="scene" data-scene="click">
       <div class="game">
         <div class="game-header">
           <button class="back-btn" data-back>← Menu</button>
-          <span style="font-family: 'Clash Display'; font-weight: 700; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--cyan);">Gara 03 / 10 secondi</span>
+          <span class="game-tag">Gara 03 / 10 secondi</span>
         </div>
-        <h1 class="game-title">Click<br/>Rapido</h1>
+        <h1 class="game-title">Bombardiro<br/><em>Click Rage</em></h1>
 
         <div class="scoreboard">
           <div class="score-cell highlight">
@@ -178,13 +197,67 @@
         <div class="btn-row">
           <button class="btn" id="clickStart">Avvia 10″</button>
           <button class="btn ghost" data-reset="click">Reset record</button>
+          <button class="btn ghost" data-share="click">📤 Condividi</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== LEADERBOARD ===== -->
+    <section class="scene" data-scene="leaderboard">
+      <div class="game">
+        <div class="game-header">
+          <button class="back-btn" data-back>← Menu</button>
+          <span class="game-tag">Classifica nazionale</span>
+        </div>
+        <h1 class="game-title">Classifica<br/><em>Italia</em></h1>
+
+        <div class="lb-tabs">
+          <button class="lb-tab active" data-lb="click">🔥 Click Rage</button>
+          <button class="lb-tab" data-lb="guess">🎯 Tung Tung</button>
+          <button class="lb-tab" data-lb="rps">🦈 Tralalero</button>
+        </div>
+
+        <div class="lb-list" id="lbList">
+          <div class="lb-empty">Caricamento…</div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn ghost" id="lbRefresh">Aggiorna</button>
         </div>
       </div>
     </section>
   </div>
 
-  <div class="reaction" id="reaction"></div>
+  <!-- ===== NICKNAME MODAL ===== -->
+  <div class="modal" id="nickModal" hidden>
+    <div class="modal-card">
+      <h3 class="modal-title">Salva il record</h3>
+      <p class="modal-sub">Scegli il nome del tuo personaggio Brainrot e la regione. Ti vedrai in classifica.</p>
+      <label class="modal-label">Nome (max 16 caratteri)</label>
+      <input class="modal-input" id="nickInput" maxlength="16" placeholder="Tralalero69" />
+      <label class="modal-label">Regione</label>
+      <select class="modal-input" id="regionInput">
+        <option value="">— Scegli —</option>
+        <option>Abruzzo</option><option>Basilicata</option><option>Calabria</option>
+        <option>Campania</option><option>Emilia-Romagna</option><option>Friuli-V.G.</option>
+        <option>Lazio</option><option>Liguria</option><option>Lombardia</option>
+        <option>Marche</option><option>Molise</option><option>Piemonte</option>
+        <option>Puglia</option><option>Sardegna</option><option>Sicilia</option>
+        <option>Toscana</option><option>Trentino-A.A.</option><option>Umbria</option>
+        <option>Valle d'Aosta</option><option>Veneto</option>
+        <option>Estero</option>
+      </select>
+      <div class="modal-actions">
+        <button class="btn" id="nickSave">Salva e pubblica</button>
+        <button class="btn ghost" id="nickSkip">No grazie</button>
+      </div>
+    </div>
+  </div>
 
+  <div class="reaction" id="reaction"></div>
+  <div class="toast" id="toast" hidden></div>
+
+  <script type="module" src="/firebase.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>
