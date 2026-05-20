@@ -3,37 +3,121 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gheigheims Italia — mini giochi</title>
+  <title>Gheigheims Italia — Campionato dei Mini Giochi, Ed. 2026</title>
+  <meta name="description" content="Il campionato italiano dei mini giochi web. Tre gare, una sola classifica." />
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0908'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23ff5a1f'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%230a0908'/%3E%3C/svg%3E" />
 </head>
 <body>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span><b class="live">● LIVE</b><span class="dot"></span>Campionato Italiano dei Mini Giochi<span class="dot"></span>Edizione 2026<span class="dot"></span>Tre gare, una classifica<span class="dot"></span>Stagione aperta<span class="dot"></span>Roma · Milano · Napoli<span class="dot"></span>Trasmissione continua</span>
+      <span><b class="live">● LIVE</b><span class="dot"></span>Campionato Italiano dei Mini Giochi<span class="dot"></span>Edizione 2026<span class="dot"></span>Tre gare, una classifica<span class="dot"></span>Stagione aperta<span class="dot"></span>Roma · Milano · Napoli<span class="dot"></span>Trasmissione continua</span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <span>Gheigheims Italia</span>
+    </div>
+    <div class="nav-meta">
+      <span>EDIZ. <b>2026</b></span>
+      <span>GARE <b>03</b></span>
+      <span>STATO <b style="color: var(--accent);">APERTA</b></span>
+    </div>
+  </nav>
+
   <header class="hero">
-    <h1 class="title">Gheigheims Italia</h1>
-    <p class="subtitle">Tre mini giochi, un solo campionato.</p>
+    <p class="hero-eyebrow reveal d1">Volume I · Anno 2026</p>
+    <h1 class="hero-title">
+      <span class="reveal d2">Campionato</span><br/>
+      <span class="stroke reveal d3">italiano</span><br/>
+      <span class="accent reveal d4">mini giochi</span>
+    </h1>
+    <div class="hero-meta">
+      <div class="hero-meta-item reveal d5">
+        <span class="hero-meta-label">Discipline</span>
+        <span class="hero-meta-value">Tre · <span class="pale">selezionate</span></span>
+      </div>
+      <div class="hero-meta-item reveal d6">
+        <span class="hero-meta-label">Iscrizione</span>
+        <span class="hero-meta-value">Gratuita</span>
+      </div>
+      <div class="hero-meta-item reveal d7">
+        <span class="hero-meta-label">Durata media</span>
+        <span class="hero-meta-value">90 secondi a gara</span>
+      </div>
+    </div>
   </header>
 
-  <main class="grid">
-    <a class="card" href="/games/rps.html">
-      <span class="card-tag">01</span>
-      <h2>Sasso, Carta, Forbice</h2>
-      <p>Sfida la CPU al meglio dei cinque.</p>
+  <div class="section-head">
+    <h2 class="section-title">Le gare<span class="count">/03</span></h2>
+    <span class="section-aside">Scorri · clicca · gioca</span>
+  </div>
+
+  <main class="games">
+    <a class="game-row" href="/games/rps.html">
+      <span class="game-num">01</span>
+      <div class="game-info">
+        <h3 class="game-name">Sasso, Carta, Forbice</h3>
+        <p class="game-desc">Sfida la macchina al meglio dei cinque. Tre scelte, una mente fredda, un dito veloce.</p>
+      </div>
+      <div class="game-tags">
+        <span class="tag">2 min</span>
+        <span class="tag hot">Classico</span>
+      </div>
+      <div class="game-stat">
+        Velocità<b>Istantanea</b>
+      </div>
+      <span class="game-arrow">→</span>
     </a>
-    <a class="card" href="/games/guess.html">
-      <span class="card-tag">02</span>
-      <h2>Indovina il Numero</h2>
-      <p>Da 1 a 100. Hai sette tentativi.</p>
+
+    <a class="game-row" href="/games/guess.html">
+      <span class="game-num">02</span>
+      <div class="game-info">
+        <h3 class="game-name">Indovina il Numero</h3>
+        <p class="game-desc">Da uno a cento. Sette tentativi, indizi binari. Più alto, più basso, deciso.</p>
+      </div>
+      <div class="game-tags">
+        <span class="tag">3 min</span>
+        <span class="tag new">Logica</span>
+      </div>
+      <div class="game-stat">
+        Tentativi<b>07</b>
+      </div>
+      <span class="game-arrow">→</span>
     </a>
-    <a class="card" href="/games/clicker.html">
-      <span class="card-tag">03</span>
-      <h2>Click Rapido</h2>
-      <p>Quanti click in 10 secondi?</p>
+
+    <a class="game-row" href="/games/clicker.html">
+      <span class="game-num">03</span>
+      <div class="game-info">
+        <h3 class="game-name">Click Rapido</h3>
+        <p class="game-desc">Dieci secondi, un solo bersaglio. Tieni il punteggio, batti il record.</p>
+      </div>
+      <div class="game-tags">
+        <span class="tag">10 sec</span>
+        <span class="tag hot">Velocità</span>
+      </div>
+      <div class="game-stat">
+        Cronometro<b>00:10.0</b>
+      </div>
+      <span class="game-arrow">→</span>
     </a>
   </main>
 
+  <section class="strip">
+    <div class="strip-inner">
+      <h3 class="strip-title">Tre gare. <em>Una</em> sola classifica.</h3>
+      <a class="strip-cta" href="/games/rps.html">Inizia dal numero uno</a>
+    </div>
+  </section>
+
   <footer class="foot">
-    <p>© Gheigheims Italia 2026</p>
+    <span>© Gheigheims Italia · MMXXVI</span>
+    <span>Trasmissione continua · Edizione I</span>
   </footer>
 </body>
 </html>

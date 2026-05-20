@@ -3,31 +3,61 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Click Rapido — Gheigheims Italia</title>
+  <title>Gara 03 · Click Rapido — Gheigheims Italia</title>
+  <link rel="preconnect" href="https://api.fontshare.com" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0908'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23ff5a1f'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%230a0908'/%3E%3C/svg%3E" />
 </head>
 <body>
-  <div class="game">
-    <a class="back" href="/">← Tutti i giochi</a>
-    <h1>Click Rapido</h1>
-    <p class="lede">Quanti click riesci a fare in 10 secondi?</p>
+  <div class="game-page">
+    <div class="crumb reveal d1">
+      <a href="/"><span>←</span> Indice gare</a>
+      <span><span class="live-dot"></span>&nbsp;&nbsp;Gara 03 · in corso</span>
+    </div>
 
-    <div class="panel">
-      <div class="score">
-        <div>Tempo <b id="time">10.0</b></div>
-        <div>Click <b id="count">0</b></div>
-        <div>Record <b id="best">0</b></div>
+    <div class="game-header reveal d2">
+      <div>
+        <p class="game-eyebrow">Disciplina 03 · Cronometro</p>
+        <h1 class="game-h1">Click<br/><em>rapido</em></h1>
       </div>
-
-      <div class="clicker-area" id="area">Inizia</div>
-
-      <div class="btn-row">
-        <button class="btn" id="start">Avvia</button>
-        <button class="btn secondary" id="reset">Reset record</button>
+      <div class="game-side">
+        Durata
+        <b>10″</b>
       </div>
+    </div>
 
-      <div id="result" class="result empty"></div>
+    <div class="scoreboard reveal d3">
+      <div class="score-cell highlight">
+        <div class="score-label">Tempo</div>
+        <div class="score-value accent" id="time">10.0</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-label">Click</div>
+        <div class="score-value" id="count">0</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-label">Record</div>
+        <div class="score-value small" id="best">0</div>
+      </div>
+    </div>
+
+    <div class="clicker-zone reveal d4" id="area">
+      <div>
+        <div class="clicker-state idle" id="state">Premi avvia</div>
+        <div class="clicker-sub" id="sub">Poi clicca qui ovunque</div>
+      </div>
+    </div>
+
+    <div class="btn-row reveal d5">
+      <button class="btn" id="start">Avvia cronometro</button>
+      <button class="btn ghost" id="reset">Azzera record</button>
+      <a class="btn ghost" href="/">← Indice gare</a>
+    </div>
+
+    <div id="result" class="result empty">
+      <span class="result-mark"></span>
+      <span class="result-text" id="resultText"></span>
     </div>
   </div>
 
@@ -36,11 +66,14 @@
     const timeEl = document.getElementById("time");
     const countEl = document.getElementById("count");
     const bestEl = document.getElementById("best");
+    const stateEl = document.getElementById("state");
+    const subEl = document.getElementById("sub");
     const result = document.getElementById("result");
+    const resultText = document.getElementById("resultText");
     const startBtn = document.getElementById("start");
 
     const DURATION_MS = 10000;
-    const BEST_KEY = "clicker.best";
+    const BEST_KEY = "gheigheims.clicker.best";
 
     let running = false;
     let count = 0;
@@ -64,9 +97,11 @@
       running = true;
       count = 0;
       countEl.textContent = "0";
-      area.textContent = "CLICCA";
+      stateEl.textContent = "Clicca";
+      stateEl.className = "clicker-state";
+      subEl.textContent = "Vai vai vai";
       area.classList.remove("locked");
-      result.textContent = "";
+      area.classList.add("live");
       result.classList.add("empty");
       endsAt = performance.now() + DURATION_MS;
       timeEl.textContent = (DURATION_MS / 1000).toFixed(1);
@@ -77,24 +112,37 @@
       running = false;
       cancelAnimationFrame(raf);
       timeEl.textContent = "0.0";
-      area.textContent = "Tempo scaduto";
+      stateEl.textContent = "Tempo";
+      stateEl.className = "clicker-state over";
+      subEl.textContent = `${count} click totali`;
       area.classList.add("locked");
+      area.classList.remove("live");
 
-      let msg = `Hai fatto ${count} click in 10 secondi.`;
+      const cps = (count / (DURATION_MS / 1000)).toFixed(1);
+      let msg = `<b>${count}</b> click in 10 secondi · <span class="pale">${cps} click/sec</span>.`;
       if (count > best) {
         best = count;
         localStorage.setItem(BEST_KEY, String(best));
         bestEl.textContent = best;
-        msg += " Nuovo record.";
+        msg += ` <b>Nuovo record personale.</b>`;
       }
-      result.textContent = msg;
+      resultText.innerHTML = msg;
       result.classList.remove("empty");
     }
 
-    area.addEventListener("click", () => {
+    area.addEventListener("click", (e) => {
       if (!running) return;
       count++;
       countEl.textContent = count;
+
+      const rect = area.getBoundingClientRect();
+      const fx = document.createElement("span");
+      fx.className = "fx";
+      fx.textContent = "+1";
+      fx.style.left = (e.clientX - rect.left) + "px";
+      fx.style.top = (e.clientY - rect.top - 10) + "px";
+      area.appendChild(fx);
+      setTimeout(() => fx.remove(), 800);
     });
 
     startBtn.addEventListener("click", start);

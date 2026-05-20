@@ -3,29 +3,59 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Indovina il Numero — Gheigheims Italia</title>
+  <title>Gara 02 · Indovina il Numero — Gheigheims Italia</title>
+  <link rel="preconnect" href="https://api.fontshare.com" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0908'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23ff5a1f'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%230a0908'/%3E%3C/svg%3E" />
 </head>
 <body>
-  <div class="game">
-    <a class="back" href="/">← Tutti i giochi</a>
-    <h1>Indovina il Numero</h1>
-    <p class="lede">Penso a un numero tra 1 e 100. Hai 7 tentativi.</p>
+  <div class="game-page">
+    <div class="crumb reveal d1">
+      <a href="/"><span>←</span> Indice gare</a>
+      <span><span class="live-dot"></span>&nbsp;&nbsp;Gara 02 · in corso</span>
+    </div>
 
-    <div class="panel">
-      <div class="score">
-        <div>Tentativi rimasti <b id="tries">7</b></div>
-        <div>Indovinati <b id="wins">0</b></div>
+    <div class="game-header reveal d2">
+      <div>
+        <p class="game-eyebrow">Disciplina 02 · Codice da decifrare</p>
+        <h1 class="game-h1">Indovina<br/><em>il numero</em></h1>
       </div>
-
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <input class="input" id="guess" type="number" min="1" max="100" placeholder="1 - 100" />
-        <button class="btn" id="submit">Indovina</button>
-        <button class="btn secondary" id="reset">Nuovo numero</button>
+      <div class="game-side">
+        Intervallo
+        <b>1—100</b>
       </div>
+    </div>
 
-      <div id="result" class="result empty"></div>
+    <div class="scoreboard reveal d3">
+      <div class="score-cell highlight">
+        <div class="score-label">Tentativi rimasti</div>
+        <div class="score-value accent" id="tries">7</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-label">Indovinati</div>
+        <div class="score-value" id="wins">0</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-label">Ultimo tiro</div>
+        <div class="score-value small" id="last">—</div>
+      </div>
+    </div>
+
+    <div class="guess-row reveal d4">
+      <input class="input" id="guess" type="number" min="1" max="100" placeholder="00" inputmode="numeric" />
+      <button class="btn" id="submit">Spara il numero</button>
+      <button class="btn ghost" id="reset">Nuovo codice</button>
+    </div>
+
+    <div id="result" class="result empty">
+      <span class="result-mark"></span>
+      <span class="result-text" id="resultText"></span>
+    </div>
+
+    <div class="btn-row reveal d5" style="margin-top: 40px;">
+      <a class="btn ghost" href="/games/rps.html">← Gara precedente</a>
+      <a class="btn ghost" href="/games/clicker.html">Gara successiva →</a>
     </div>
   </div>
 
@@ -37,13 +67,15 @@
 
     const triesEl = document.getElementById("tries");
     const winsEl = document.getElementById("wins");
+    const lastEl = document.getElementById("last");
     const result = document.getElementById("result");
+    const resultText = document.getElementById("resultText");
     const input = document.getElementById("guess");
 
     function randomTarget() { return Math.floor(Math.random() * 100) + 1; }
 
-    function setResult(text) {
-      result.textContent = text;
+    function setResult(html) {
+      resultText.innerHTML = html;
       result.classList.remove("empty");
     }
 
@@ -51,14 +83,16 @@
       if (ended) return;
       const v = parseInt(input.value, 10);
       if (Number.isNaN(v) || v < 1 || v > 100) {
-        setResult("Inserisci un numero tra 1 e 100.");
+        setResult("Inserisci un numero tra <b>1</b> e <b>100</b>.");
         return;
       }
+
+      lastEl.textContent = String(v).padStart(2, "0");
 
       if (v === target) {
         wins++;
         winsEl.textContent = wins;
-        setResult(`Esatto. Il numero era ${target}.`);
+        setResult(`Esatto. Il codice era <b>${target}</b>.`);
         ended = true;
         return;
       }
@@ -67,12 +101,12 @@
       triesEl.textContent = tries;
 
       if (tries === 0) {
-        setResult(`Finiti i tentativi. Il numero era ${target}.`);
+        setResult(`Tentativi esauriti. Il codice era <span class="pale">${target}</span>.`);
         ended = true;
         return;
       }
 
-      setResult(v < target ? "Più alto." : "Più basso.");
+      setResult(v < target ? "Più <b>alto</b>." : "Più <b>basso</b>.");
       input.select();
     }
 
@@ -81,7 +115,7 @@
       tries = 7;
       ended = false;
       triesEl.textContent = tries;
-      result.textContent = "";
+      lastEl.textContent = "—";
       result.classList.add("empty");
       input.value = "";
       input.focus();

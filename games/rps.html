@@ -3,33 +3,71 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sasso Carta Forbice — Gheigheims Italia</title>
+  <title>Gara 01 · Sasso, Carta, Forbice — Gheigheims Italia</title>
+  <link rel="preconnect" href="https://api.fontshare.com" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0908'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23ff5a1f'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%230a0908'/%3E%3C/svg%3E" />
 </head>
 <body>
-  <div class="game">
-    <a class="back" href="/">← Tutti i giochi</a>
-    <h1>Sasso, Carta, Forbice</h1>
-    <p class="lede">Primo che arriva a 5 punti vince.</p>
+  <div class="game-page">
+    <div class="crumb reveal d1">
+      <a href="/"><span>←</span> Indice gare</a>
+      <span><span class="live-dot"></span>&nbsp;&nbsp;Gara 01 · in corso</span>
+    </div>
 
-    <div class="panel">
-      <div class="score">
-        <div>Tu <b id="scoreYou">0</b></div>
-        <div>CPU <b id="scoreCpu">0</b></div>
+    <div class="game-header reveal d2">
+      <div>
+        <p class="game-eyebrow">Disciplina 01 · Best of five</p>
+        <h1 class="game-h1">Sasso<br/><em>Carta</em><br/>Forbice</h1>
       </div>
-
-      <div class="choices">
-        <button class="choice" data-pick="rock" aria-label="Sasso">🪨</button>
-        <button class="choice" data-pick="paper" aria-label="Carta">📄</button>
-        <button class="choice" data-pick="scissors" aria-label="Forbice">✂️</button>
+      <div class="game-side">
+        Obiettivo
+        <b>5</b>
       </div>
+    </div>
 
-      <div id="result" class="result empty"></div>
-
-      <div class="btn-row">
-        <button class="btn secondary" id="reset">Ricomincia</button>
+    <div class="scoreboard reveal d3">
+      <div class="score-cell highlight">
+        <div class="score-label">Tu</div>
+        <div class="score-value accent" id="scoreYou">0</div>
       </div>
+      <div class="score-cell">
+        <div class="score-label">Macchina</div>
+        <div class="score-value" id="scoreCpu">0</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-label">Round</div>
+        <div class="score-value small" id="roundN">1</div>
+      </div>
+    </div>
+
+    <div class="choices reveal d4">
+      <button class="choice" data-pick="rock">
+        <span class="choice-num">01</span>
+        <span class="choice-emoji">✊</span>
+        <span class="choice-label">Sasso</span>
+      </button>
+      <button class="choice" data-pick="paper">
+        <span class="choice-num">02</span>
+        <span class="choice-emoji">✋</span>
+        <span class="choice-label">Carta</span>
+      </button>
+      <button class="choice" data-pick="scissors">
+        <span class="choice-num">03</span>
+        <span class="choice-emoji">✌</span>
+        <span class="choice-label">Forbice</span>
+      </button>
+    </div>
+
+    <div class="btn-row reveal d5">
+      <button class="btn ghost" id="reset">Ricomincia da capo</button>
+      <a class="btn ghost" href="/games/guess.html">Gara successiva →</a>
+    </div>
+
+    <div id="result" class="result empty">
+      <span class="result-mark"></span>
+      <span class="result-text" id="resultText"></span>
     </div>
   </div>
 
@@ -40,27 +78,36 @@
 
     let you = 0;
     let cpu = 0;
+    let round = 1;
 
     const scoreYou = document.getElementById("scoreYou");
     const scoreCpu = document.getElementById("scoreCpu");
+    const roundN = document.getElementById("roundN");
     const result = document.getElementById("result");
+    const resultText = document.getElementById("resultText");
+
+    function setResult(html) {
+      resultText.innerHTML = html;
+      result.classList.remove("empty");
+    }
 
     function play(pick) {
       if (you >= 5 || cpu >= 5) return;
       const cpuPick = opts[Math.floor(Math.random() * 3)];
       let outcome;
       if (pick === cpuPick) outcome = "Pareggio.";
-      else if (beats[pick] === cpuPick) { you++; outcome = "Vinci il punto."; }
-      else { cpu++; outcome = "Perdi il punto."; }
+      else if (beats[pick] === cpuPick) { you++; outcome = "<b>Punto a te.</b>"; }
+      else { cpu++; outcome = "<span class=\"pale\">Punto alla macchina.</span>"; }
 
-      let msg = `Tu: ${labels[pick]} — CPU: ${labels[cpuPick]}. ${outcome}`;
-      if (you === 5) msg = `${msg} Hai vinto la partita.`;
-      if (cpu === 5) msg = `${msg} CPU ha vinto la partita.`;
-
+      round = you + cpu + 1;
       scoreYou.textContent = you;
       scoreCpu.textContent = cpu;
-      result.textContent = msg;
-      result.classList.remove("empty");
+      roundN.textContent = Math.min(round, 9);
+
+      let msg = `Tu: ${labels[pick]} — Macchina: ${labels[cpuPick]}. ${outcome}`;
+      if (you === 5) msg = `${msg} <b>Match tuo.</b>`;
+      if (cpu === 5) msg = `${msg} <span class="pale">Match della macchina.</span>`;
+      setResult(msg);
     }
 
     document.querySelectorAll(".choice").forEach(btn => {
@@ -68,10 +115,10 @@
     });
 
     document.getElementById("reset").addEventListener("click", () => {
-      you = 0; cpu = 0;
+      you = 0; cpu = 0; round = 1;
       scoreYou.textContent = "0";
       scoreCpu.textContent = "0";
-      result.textContent = "";
+      roundN.textContent = "1";
       result.classList.add("empty");
     });
   </script>
