@@ -10,12 +10,12 @@ import {
 // ⚠️ REPLACE with your own Firebase web app config.
 // Get it at: console.firebase.google.com → your project → ⚙️ Settings → General → Your apps → Web → Config
 const firebaseConfig = {
-  apiKey: "REPLACE_ME",
-  authDomain: "REPLACE_ME.firebaseapp.com",
-  projectId: "REPLACE_ME",
-  storageBucket: "REPLACE_ME.appspot.com",
-  messagingSenderId: "REPLACE_ME",
-  appId: "REPLACE_ME",
+  apiKey: "AIzaSyBxax0dR2WOsCCtmkqAukpXaheQduXQP_s",
+  authDomain: "gheigheimsitalia.firebaseapp.com",
+  projectId: "gheigheimsitalia",
+  storageBucket: "gheigheimsitalia.firebasestorage.app",
+  messagingSenderId: "643742203368",
+  appId: "1:643742203368:web:0a24a1c4daeafe83d4f85d",
 };
 
 const configured = !Object.values(firebaseConfig).some(v => String(v).includes("REPLACE_ME"));
